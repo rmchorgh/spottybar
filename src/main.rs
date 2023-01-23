@@ -97,7 +97,7 @@ impl<'a> TryFrom<&'a str> for TrackOp {
             "pause" => Ok(TrackOp::Pause),
             "next" => Ok(TrackOp::Next),
             "prev" | "previous" => Ok(TrackOp::Prev),
-            "current" | "currently-playing" => Ok(TrackOp::Current),
+            "curr" | "current" | "currently-playing" => Ok(TrackOp::Current),
             _ => Err(SpottyBarError::InvalidConversion),
         }
     }
