@@ -1,6 +1,6 @@
 # SpottyBar
 
-A polybar plugin for SpotifyD.
+A polybar plugin for SpotifyD written in Rust.
 
 ## Usage
 

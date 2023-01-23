@@ -9,5 +9,8 @@ edition = "2021"
 [dependencies]
 dirs = "4.0.0"
 reqwest = "0.11.14"
+rocket = "0.4.11"
+serde = "1.0.152"
+serde_json = "1.0.91"
 snafu = "0.7.4"
 tokio = {version = "1.24.2", features = ["rt", "macros", "rt-multi-thread"]}
