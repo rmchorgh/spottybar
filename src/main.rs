@@ -7,7 +7,7 @@ pub mod constants;
 pub mod controls;
 pub mod structs;
 
-use auth::{authLink, key, main as start};
+use auth::{auth_link, key, main as start};
 use controls::{current, track};
 
 use std::env::args;
@@ -29,7 +29,7 @@ async fn main() {
     if let Operation::Auth = verb {
         println!("Starting auth server.");
         spawn(|| {
-            authLink();
+            auth_link();
             start();
         })
         .join()

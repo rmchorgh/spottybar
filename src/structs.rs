@@ -1,11 +1,5 @@
-use rocket::{
-    data::{FromData, Outcome},
-    http::{ext::IntoOwned, uri::Reference, Status},
-    request::{self, FromRequest, Request},
-    Data,
-};
 use snafu::prelude::*;
-use std::convert::{Infallible, TryFrom};
+use std::convert::TryFrom;
 
 pub(crate) struct CurrentRes {
     pub artists: String,

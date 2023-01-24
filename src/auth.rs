@@ -31,7 +31,7 @@ pub(crate) fn key() -> Result<String, Box<dyn std::error::Error>> {
     Ok(format!("Bearer {}", f))
 }
 
-pub(crate) fn authLink() {
+pub(crate) fn auth_link() {
     let link = format!(
         "https://accounts.spotify.com/authorize?client_id={}&redirect_uri={}&scope={}&response_type=token", 
         CLIENT_ID, 
@@ -46,7 +46,7 @@ pub(crate) fn authLink() {
 }
 
 #[get("/token")]
-pub(crate) async fn tokenPage() -> RawHtml<&'static str> {
+pub(crate) fn token_page() -> RawHtml<&'static str> {
     RawHtml(r#"
     <!DOCTYPE html>
     <html>
@@ -68,7 +68,7 @@ pub(crate) async fn tokenPage() -> RawHtml<&'static str> {
 }
 
 #[post("/token/<token>")]
-pub(crate) async fn saveToken(token: String, shutdown: Shutdown) -> &'static str {
+pub(crate) async fn save_token(token: String, shutdown: Shutdown) -> &'static str {
     println!("{}", token);
     let mut f = File::create(keyPath()).await.expect("Should've created a file.");
     f.write_all(token.as_bytes()).await.expect("Couldn't write to file.");
@@ -83,6 +83,6 @@ pub(crate) fn rocket() -> _ {
         port: 3000,
         ..Config::default()
     };
-    custom(&c).mount("/", routes![tokenPage])
-    .mount("/", routes![saveToken])
+    custom(&c).mount("/", routes![token_page])
+    .mount("/", routes![save_token])
 }
