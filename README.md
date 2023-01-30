@@ -14,6 +14,7 @@ A CLI Tool for SpotifyD written in Rust.
 
 ## Next Steps
 
+-   Mac Support
 -   Like Songs
 -   Search and Play a Song
 -   List and Play Playlists
