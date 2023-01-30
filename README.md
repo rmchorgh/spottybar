@@ -1,6 +1,6 @@
 # SpottyBar
 
-A polybar plugin for SpotifyD written in Rust.
+A CLI Tool for SpotifyD written in Rust.
 
 ## Usage
 
@@ -11,3 +11,9 @@ A polybar plugin for SpotifyD written in Rust.
 | Previous      | `spottybar prev` or `spottybar previous`                                 |
 | Play          | `spottybar play`                                                         |
 | Pause         | `spottybar pause`                                                        |
+
+## Next Steps
+
+-   Like Songs
+-   Search and Play a Song
+-   List and Play Playlists
