@@ -76,7 +76,7 @@ pub(crate) async fn track(
         Ok(format!("{}ed track", dir.as_str()))
     } else {
         if body.contains("The access token expired") && tries > 0 {
-            authorize().await;
+            authorize();
             return Err(Box::new(SpottyBarError::TokenExpired));
         }
         println!("Body:\n {}", body);

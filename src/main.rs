@@ -18,14 +18,14 @@ use crate::structs::SpottyBarError;
 
 #[tokio::main]
 async fn main() {
-    let auth = key().unwrap();
-
     let a: Vec<String> = args().collect();
     if a.len() < 2 {
         panic!("No verb included.")
     } else if a.len() > 2 {
         panic!("Too many verbs included.")
     }
+
+    let auth = key().unwrap();
 
     let verb: Operation = match a[1].as_str().try_into() {
         Ok(v) => v,
@@ -34,7 +34,7 @@ async fn main() {
 
     let mut tries = 1;
     if let Operation::Auth = verb {
-        authorize().await;
+        authorize();
     } else {
         let v = match verb {
             Operation::Current => current(auth).await,
@@ -55,7 +55,7 @@ async fn main() {
     }
 }
 
-async fn authorize() {
+fn authorize() {
     println!("Starting auth server.");
     spawn(|| {
         auth_link();

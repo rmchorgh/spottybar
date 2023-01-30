@@ -10,6 +10,7 @@ use std::fs::read_to_string;
 use std::process::Command;
 use urlencoding::encode;
 
+use crate::authorize;
 use crate::constants::{CLIENT_ID, REDIRECT, SCOPES};
 
 fn key_path() -> String {
@@ -21,7 +22,11 @@ fn key_path() -> String {
 
 pub(crate) fn key() -> Result<String, Box<dyn std::error::Error>> {
     let mut f = read_to_string(key_path())
-    .expect("Couldn't get key.");
+    .or_else(|_| {
+        println!("no key file");
+        authorize();
+        read_to_string(key_path())
+    }).unwrap();
 
     if f.contains("\n") {
         f.pop();
