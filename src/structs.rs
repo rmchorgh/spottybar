@@ -17,6 +17,7 @@ impl CurrentRes {
     }
 }
 
+#[derive(Clone)]
 pub(crate) enum Operation {
     Prev,
     Next,
@@ -56,6 +57,7 @@ impl<'a> TryFrom<&'a str> for Operation {
 }
 
 #[derive(Debug, Snafu)]
+// #[derive(Debug)]
 pub(crate) enum SpottyBarError {
     #[snafu(display("Invalid direction"))]
     InvalidDirection,
@@ -68,4 +70,20 @@ pub(crate) enum SpottyBarError {
 
     #[snafu(display("Post Request Error"))]
     PostRequestError,
+
+    #[snafu(display("Token Expired"))]
+    TokenExpired,
 }
+
+// impl std::error::Error for SpottyBarError {}
+// impl fmt::Display for SpottyBarError {
+//     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+//         let v = match self {
+//             Self::InvalidDirection => "invalid direction",
+//             Self::InvalidConversion => "invalid conversion",
+//             Self::PostRequestError => "post request error",
+//             Self::RequestError => "request error",
+//         };
+//         write!(f, "{}", v)
+//     }
+// }

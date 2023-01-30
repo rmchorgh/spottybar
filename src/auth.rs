@@ -2,9 +2,8 @@ extern crate dirs;
 extern crate rocket;
 extern crate urlencoding;
 
-use rocket::http::uri::{Origin, Reference};
 use rocket::response::content::RawHtml;
-use rocket::{build, custom, Config, Shutdown, Request};
+use rocket::{custom, Config, Shutdown};
 use tokio::fs::File;
 use tokio::io::AsyncWriteExt;
 use std::fs::read_to_string;
@@ -13,7 +12,7 @@ use urlencoding::encode;
 
 use crate::constants::{CLIENT_ID, REDIRECT, SCOPES};
 
-fn keyPath() -> String {
+fn key_path() -> String {
     format!(
         "{}/.config/spottybar/key",
         dirs::home_dir().unwrap().display()
@@ -21,7 +20,7 @@ fn keyPath() -> String {
 }
 
 pub(crate) fn key() -> Result<String, Box<dyn std::error::Error>> {
-    let mut f = read_to_string(keyPath())
+    let mut f = read_to_string(key_path())
     .expect("Couldn't get key.");
 
     if f.contains("\n") {
@@ -70,7 +69,7 @@ pub(crate) fn token_page() -> RawHtml<&'static str> {
 #[post("/token/<token>")]
 pub(crate) async fn save_token(token: String, shutdown: Shutdown) -> &'static str {
     println!("{}", token);
-    let mut f = File::create(keyPath()).await.expect("Should've created a file.");
+    let mut f = File::create(key_path()).await.expect("Should've created a file.");
     f.write_all(token.as_bytes()).await.expect("Couldn't write to file.");
 
     shutdown.notify();

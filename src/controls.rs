@@ -2,25 +2,28 @@ extern crate reqwest;
 extern crate serde;
 extern crate tokio;
 
+use crate::authorize;
 use crate::constants::SPOTIFY;
 use crate::structs::{CurrentRes, Operation, SpottyBarError};
 
 use reqwest::header::{AUTHORIZATION, CONTENT_LENGTH};
 use serde_json::Value;
 
-pub(crate) async fn current(auth: String) -> Result<String, Box<dyn std::error::Error>> {
+pub(crate) async fn current(auth: String) -> Result<String, Box<SpottyBarError>> {
     let c = reqwest::Client::new();
     let body = c
         .get(format!("{}currently-playing", SPOTIFY))
         .header(AUTHORIZATION, auth)
         .send()
-        .await?
+        .await
+        .unwrap()
         .text()
-        .await?;
+        .await
+        .unwrap();
 
     // println!("Body:\n {}", body);
 
-    let v: Value = serde_json::from_str(&body)?;
+    let v: Value = serde_json::from_str(&body).unwrap();
 
     let a = v["item"]["artists"]
         .as_array()
@@ -47,7 +50,8 @@ pub(crate) async fn current(auth: String) -> Result<String, Box<dyn std::error::
 pub(crate) async fn track(
     dir: Operation,
     auth: String,
-) -> Result<String, Box<dyn std::error::Error>> {
+    tries: u8,
+) -> Result<String, Box<SpottyBarError>> {
     let c = reqwest::Client::new();
 
     let url = format!("{}{}", SPOTIFY, dir.as_str());
@@ -58,17 +62,23 @@ pub(crate) async fn track(
     };
 
     let body = rb
-        .header(AUTHORIZATION, auth)
+        .header(AUTHORIZATION, auth.clone())
         .header(CONTENT_LENGTH, 0)
         .body("")
         .send()
-        .await?
+        .await
+        .unwrap()
         .text()
-        .await?;
+        .await
+        .unwrap();
 
     if body.len() == 0 {
         Ok(format!("{}ed track", dir.as_str()))
     } else {
+        if body.contains("The access token expired") && tries > 0 {
+            authorize().await;
+            return Err(Box::new(SpottyBarError::TokenExpired));
+        }
         println!("Body:\n {}", body);
         Err(Box::new(SpottyBarError::RequestError))
     }

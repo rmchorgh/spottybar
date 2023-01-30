@@ -14,6 +14,8 @@ use std::env::args;
 use std::thread::spawn;
 use structs::Operation;
 
+use crate::structs::SpottyBarError;
+
 #[tokio::main]
 async fn main() {
     let auth = key().unwrap();
@@ -25,24 +27,40 @@ async fn main() {
         panic!("Too many verbs included.")
     }
 
-    let verb: Operation = a[1].as_str().try_into().unwrap();
+    let verb: Operation = match a[1].as_str().try_into() {
+        Ok(v) => v,
+        Err(_) => panic!("Not a valid operation verb."),
+    };
+
+    let mut tries = 1;
     if let Operation::Auth = verb {
-        println!("Starting auth server.");
-        spawn(|| {
-            auth_link();
-            start();
-        })
-        .join()
-        .expect("Server thread panicked.")
+        authorize().await;
     } else {
         let v = match verb {
             Operation::Current => current(auth).await,
-            _ => match track(verb, auth.clone()).await {
+            _ => match track(verb.clone(), auth.clone(), tries).await {
                 Ok(_) => current(auth).await,
-                Err(x) => Err(x),
+                Err(x) => {
+                    if let SpottyBarError::TokenExpired = *x {
+                        tries -= 1;
+                        track(verb, auth, tries).await
+                    } else {
+                        Err(x)
+                    }
+                }
             },
         };
 
         println!("{}", v.expect("Should have changed something."));
     }
+}
+
+async fn authorize() {
+    println!("Starting auth server.");
+    spawn(|| {
+        auth_link();
+        start();
+    })
+    .join()
+    .expect("Server thread panicked.")
 }
