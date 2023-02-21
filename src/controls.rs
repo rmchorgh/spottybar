@@ -81,17 +81,52 @@ pub(crate) fn track(
         if body.len() == 0 {
             return Ok(current(auth).await.unwrap());
         } else {
-            let contains_expired = body.contains("access token");
-            if contains_expired && tries >= 0 && authorize().is_ok() {
+            let expired = body.contains("access token");
+            if expired && tries >= 0 && authorize().is_ok() {
                 let new_auth = key().unwrap();
                 return track(dir, new_auth, tries - 1).await;
-            } else if contains_expired && tries < 0 {
+            } else if expired && tries < 0 {
                 return Err(SpottyBarError::TokenExpired);
-            } else {
-                println!("Body:\n{}", body);
-                return Err(SpottyBarError::RequestError);
             }
+
+
+            let nodevice = body.contains("device");
+            if nodevice && tries >= 0 {
+                setDevice(auth, devices(auth).unwrap());
+                return track(dir, auth, tries - 1).await;
+            }
+            println!("Body:\n{}", body);
+            return Err(SpottyBarError::RequestError);
+            
         }
     }
     .boxed()
+}
+
+pub(crate) async fn devices(auth: String) -> Result<String, SpottyBarError> {
+    let c = Client::new();
+    let url = format!("{}{}", SPOTIFY, "devices");
+    let rb = c.get(url);
+    let body = rb
+        .header(AUTHORIZATION, auth.clone())
+        .header(CONTENT_LENGTH, 0)
+        .body("")
+        .send()
+        .await
+        .unwrap()
+        .text()
+        .await
+        .unwrap();
+
+    println!("devices body:\n{}", body);
+    Ok("hi".to_string())
+}
+
+pub(crate) async fn setDevice(auth: String, deviceId: String) -> Result<String, SpottyBarError> {
+    let c = Client::new();
+    let url = format("{}{}", SPOTIFY, "player");
+    let rb = c.get(url);
+    let body = rb
+        .header(AUTHORIZATION, auth.clone())
+        .body(format!("{{\"device_ids\": }}"))
 }
