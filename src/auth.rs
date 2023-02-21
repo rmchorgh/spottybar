@@ -4,10 +4,10 @@ extern crate urlencoding;
 
 use rocket::response::content::RawHtml;
 use rocket::{custom, Config, Shutdown};
-use tokio::fs::File;
-use tokio::io::AsyncWriteExt;
 use std::fs::read_to_string;
 use std::process::Command;
+use tokio::fs::File;
+use tokio::io::AsyncWriteExt;
 use urlencoding::encode;
 
 use crate::authorize;
@@ -22,11 +22,12 @@ fn key_path() -> String {
 
 pub(crate) fn key() -> Result<String, Box<dyn std::error::Error>> {
     let mut f = read_to_string(key_path())
-    .or_else(|_| {
-        println!("no key file");
-        authorize();
-        read_to_string(key_path())
-    }).unwrap();
+        .or_else(|_| {
+            println!("no key file");
+            let _ = authorize().unwrap();
+            read_to_string(key_path())
+        })
+        .unwrap();
 
     if f.contains("\n") {
         f.pop();
@@ -38,12 +39,12 @@ pub(crate) fn key() -> Result<String, Box<dyn std::error::Error>> {
 pub(crate) fn auth_link() {
     let link = format!(
         "https://accounts.spotify.com/authorize?client_id={}&redirect_uri={}&scope={}&response_type=token", 
-        CLIENT_ID, 
-        encode(REDIRECT), 
+        CLIENT_ID,
+        encode(REDIRECT),
         encode(SCOPES)
     );
     println!("Opening {} in Firefox.", link);
-    Command::new("xdg-open")
+    Command::new("open")
         .arg(link)
         .output()
         .expect("Couldn't open link.");
@@ -51,7 +52,8 @@ pub(crate) fn auth_link() {
 
 #[get("/token")]
 pub(crate) fn token_page() -> RawHtml<&'static str> {
-    RawHtml(r#"
+    RawHtml(
+        r#"
     <!DOCTYPE html>
     <html>
         <head>
@@ -68,14 +70,19 @@ pub(crate) fn token_page() -> RawHtml<&'static str> {
             </script>
         </body>
     </html>
-    "#)
+    "#,
+    )
 }
 
 #[post("/token/<token>")]
 pub(crate) async fn save_token(token: String, shutdown: Shutdown) -> &'static str {
     println!("{}", token);
-    let mut f = File::create(key_path()).await.expect("Should've created a file.");
-    f.write_all(token.as_bytes()).await.expect("Couldn't write to file.");
+    let mut f = File::create(key_path())
+        .await
+        .expect("Should've created a file.");
+    f.write_all(token.as_bytes())
+        .await
+        .expect("Couldn't write to file.");
 
     shutdown.notify();
     "saved token"
@@ -87,6 +94,7 @@ pub(crate) fn rocket() -> _ {
         port: 3000,
         ..Config::default()
     };
-    custom(&c).mount("/", routes![token_page])
-    .mount("/", routes![save_token])
+    custom(&c)
+        .mount("/", routes![token_page])
+        .mount("/", routes![save_token])
 }

@@ -9,12 +9,11 @@ pub mod structs;
 
 use auth::{auth_link, key, main as start};
 use controls::{current, track};
-
-use std::env::args;
-use std::thread::spawn;
 use structs::Operation;
 
-use crate::structs::SpottyBarError;
+use std::any::Any;
+use std::env::args;
+use std::thread::spawn;
 
 #[tokio::main]
 async fn main() {
@@ -32,35 +31,24 @@ async fn main() {
         Err(_) => panic!("Not a valid operation verb."),
     };
 
-    let mut tries = 1;
     if let Operation::Auth = verb {
-        authorize();
+        let _ = authorize();
     } else {
         let v = match verb {
             Operation::Current => current(auth).await,
-            _ => match track(verb.clone(), auth.clone(), tries).await {
-                Ok(_) => current(auth).await,
-                Err(x) => {
-                    if let SpottyBarError::TokenExpired = *x {
-                        tries -= 1;
-                        track(verb, auth, tries).await
-                    } else {
-                        Err(x)
-                    }
-                }
-            },
+            _ => track(verb.clone(), auth.clone(), 1)
+                .await
         };
 
         println!("{}", v.expect("Should have changed something."));
     }
 }
 
-fn authorize() {
+fn authorize() -> Result<(), Box<dyn Any + Send>> {
     println!("Starting auth server.");
-    spawn(|| {
+    return spawn(|| {
         auth_link();
         start();
     })
-    .join()
-    .expect("Server thread panicked.")
+    .join();
 }
