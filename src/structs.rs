@@ -1,3 +1,4 @@
+use serde::{Deserialize, Serialize};
 use snafu::prelude::*;
 use std::convert::TryFrom;
 
@@ -15,6 +16,18 @@ impl CurrentRes {
             self.artists, self.name, self.remaining, self.state
         )
     }
+}
+
+#[derive(Serialize, Deserialize)]
+pub(crate) struct DevicesRes {
+    pub devices: Vec<Device>,
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug)]
+pub(crate) struct Device {
+    pub id: String,
+    pub is_active: bool,
+    pub name: String,
 }
 
 #[derive(Clone)]

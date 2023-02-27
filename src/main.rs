@@ -6,6 +6,7 @@ pub mod auth;
 pub mod constants;
 pub mod controls;
 pub mod structs;
+pub mod utils;
 
 use auth::{auth_link, key, main as start};
 use controls::{current, track};
