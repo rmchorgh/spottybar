@@ -174,7 +174,6 @@ pub(crate) fn devices(auth: String, tries: i8) -> BoxFuture<'static, Result<Devi
                     let shell = command_vec[0];
                     let args = command_vec.drain(1..command_vec.len());
 
-                    println!("{} {:?}", shell, args);
                     let cmd = Command::new(shell)
                         .args(args)
                         .output();
