@@ -2,7 +2,7 @@ extern crate reqwest;
 extern crate serde;
 extern crate tokio;
 
-use std::fmt::format;
+
 use std::process::Command;
 
 use crate::auth::key;
@@ -15,7 +15,7 @@ use reqwest::header::{AUTHORIZATION, CONTENT_LENGTH};
 use reqwest::Client;
 use rocket::futures::future::BoxFuture;
 use rocket::futures::FutureExt;
-use serde_json::{Value, json};
+use serde_json::{Value};
 
 pub(crate) fn current(auth: String) -> BoxFuture<'static, Result<String, SpottyBarError>> {
     async move {
@@ -102,10 +102,10 @@ pub(crate) fn track(
             let nodevice = body.contains("NO_ACTIVE_DEVICE");
             if nodevice {
                 println!("NO DEVICE IN TRACK");
-                let thisDevice = devices(auth.clone(), 1).await.unwrap();
+                let this_device = devices(auth.clone(), 1).await.unwrap();
                 println!("GOT DEVICE ID");
 
-                match setDevice(auth.clone(), thisDevice).await {
+                match set_device(auth.clone(), this_device).await {
                     Ok(_) => return track(Operation::Next, auth, tries - 1).await,
                     Err(_) => return Err(SpottyBarError::RequestError)
                 }
@@ -117,7 +117,7 @@ pub(crate) fn track(
     .boxed()
 }
 
-pub(crate) fn setDevice(auth: String, device: Device) -> BoxFuture<'static, Result<(), SpottyBarError>> {
+pub(crate) fn set_device(auth: String, device: Device) -> BoxFuture<'static, Result<(), SpottyBarError>> {
     async move {
         println!("SETTING DEVICE");
 
